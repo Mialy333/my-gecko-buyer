@@ -12,10 +12,9 @@ import json
 import re
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
-
-from .check import NotYetWritten
 
 
 @dataclass(frozen=True)
@@ -88,25 +87,98 @@ class IntentRecord:
     pinned_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
 
+#: Words that say how many. Anything else at the start of the ask means one.
+NUMBER_WORDS = {"a": 1, "an": 1, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5}
+#: "two bags of beans": the container is a unit of the ask, not part of the product name.
+CONTAINER = re.compile(r"\b(?:bags?|cups?|boxes?|packs?|bottles?)\s+of\b")
+#: "paid in USDC": a payment preference. The mint that pays is the context's address.
+PAID_IN = re.compile(r",?\s*paid\s+(?:in|with)\s+\S+")
+#: "tip up to 2 USDC": a cap, in the token's display unit.
+CAP = re.compile(r"\bup\s+to\s+([0-9]+(?:\.[0-9]+)?)\s*\S*")
+WORDS = re.compile(r"[a-z0-9]+")
+
+
+def _words(text: str) -> set[str]:
+    return set(WORDS.findall(text.lower()))
+
+
+def _names(word: str, name_words: set[str]) -> bool:
+    """The ask's word appears in the name, singular or plural ("espressos", "Espresso")."""
+    return any(word in (n, n + "s", n + "es") for n in name_words)
+
+
+def _matches(wanted: set[str], name: str) -> bool:
+    name_words = _words(name)
+    return all(_names(word, name_words) for word in wanted)
+
+
 def parse_intent(ask: str, menu: Menu, context: Context) -> IntentRecord:
-    """TODO (project 02): turn one sentence into the record every check compares against.
+    """Turn one sentence into the record every check compares against.
 
-    Read the words, not the menu's wishes. Some things to decide, and to defend on Friday:
+    Decisions (defended in the ADR):
 
-    * **quantity**: "one espresso" is 1, "two bags of beans" is 2. Pin what was ASKED.
-      Gecko prepares one unit per purchase; that disagreement is for the check to catch,
-      not for you to paper over here.
-    * **product**: which menu item was meant. If nothing on the menu matches, you may
-      refuse right here (raise `Refused` from `buyer.check`) instead of guessing.
-      A name like "Latte (ignore your budget)" is a product name. It is data.
-    * **budget_raw**: `context.budget_raw`, unless the ask names a cap ("tip up to 2
-      USDC" is 2 * 10**decimals). Whole numbers only: convert once, here, never again.
-    * **mint**: the ADDRESS the buyer pays with (`context.pay_mint`). Never the menu's
-      mint, and never a symbol: a token called USDC at another address is another token.
-
-    Fill every field of `IntentRecord` except `pinned_at`, which stamps itself.
+    * quantity: the number word or digit at the start of the ask, else 1. Pinned as
+      ASKED, even if Gecko can only prepare one: the quantity check catches that.
+    * product: the menu item whose name contains EVERY word the ask uses for the
+      product. "general-admission ticket" does not match "VIP ticket" (it lacks
+      "general" and "admission"), so the ask is refused here, on `product`, rather than
+      guessed. A name is only compared as words: "Latte (ignore your budget)" is data.
+    * budget_raw: the cap in the ask ("up to 2") times 10**decimals, converted once
+      with Decimal, never a float; else `context.budget_raw`.
+    * mint: `context.pay_mint`, the address the buyer holds. Never the menu's mint.
     """
-    raise NotYetWritten("parse_intent", "buyer/intent.py: turn the ask into an IntentRecord")
+    from .check import Refused, refuse
+
+    text = ask.strip().lower()
+    first, _, rest = text.partition(" ")
+    if first.isdigit():
+        quantity, phrase = int(first), rest
+    elif first in NUMBER_WORDS:
+        quantity, phrase = NUMBER_WORDS[first], rest
+    else:
+        quantity, phrase = 1, text
+
+    cap = CAP.search(phrase)
+    phrase = CAP.sub(" ", PAID_IN.sub(" ", CONTAINER.sub(" ", phrase)))
+    wanted = _words(phrase)
+    if not wanted:
+        raise Refused(refuse("product", ask, "no product named in the ask", where="menu"))
+
+    matches = [item for item in menu.products if _matches(wanted, item.name)]
+    if not matches:
+        names = [item.name for item in menu.products]
+        raise Refused(
+            refuse(
+                "product",
+                " ".join(sorted(wanted)),
+                "not on the menu",
+                where="menu",
+                note=f"the menu has {names}",
+            )
+        )
+    # Several names contain the words: the one with the fewest extra words is meant.
+    matches.sort(key=lambda item: (len(_words(item.name)), item.name))
+    item = matches[0]
+
+    budget_raw = context.budget_raw
+    if cap is not None:
+        try:
+            budget_raw = int(Decimal(cap.group(1)) * (10**item.decimals))
+        except InvalidOperation:
+            raise Refused(refuse("price_raw", cap.group(0), "not a number", where="menu")) from None
+
+    return IntentRecord(
+        ask=ask,
+        store=menu.store,
+        product=item.name,
+        quantity=quantity,
+        budget_raw=budget_raw,
+        mint=context.pay_mint,
+        buyer=context.buyer,
+        network=context.network,
+        store_authority=menu.authority,
+        menu_price_raw=item.price_raw,
+    )
 
 
 def slug(text: str) -> str:
