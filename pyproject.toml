@@ -37,7 +37,7 @@ addopts = "-q"
 line-length = 100
 target-version = "py311"
 # Kept from the earlier template as they were; not part of the buyer.
-extend-exclude = ["workflows", "projects/01-read-the-menu"]
+extend-exclude = ["workflows", "projects/01-read-the-menu", "demo"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]

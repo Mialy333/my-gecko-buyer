@@ -60,7 +60,11 @@ def findings_in(name: str, text: str) -> list[str]:
 
 
 def _git(*args: str) -> str:
-    return subprocess.run(["git", *args], capture_output=True, text=True, errors="ignore", check=True).stdout
+    # errors="ignore": a staged binary file (an image) is scanned, not crashed on.
+    done = subprocess.run(
+        ["git", *args], capture_output=True, text=True, errors="ignore", check=True
+    )
+    return done.stdout
 
 
 def files(staged: bool) -> list[tuple[str, str]]:
