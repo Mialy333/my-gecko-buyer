@@ -6,16 +6,15 @@ Runs of 2026-10-03 and 2026-10-04. Every number comes from the command shown.
 
 | # | Ask | Expected | Recorded | Devnet | Evidence |
 |---|---|---|---|---|---|
-| 1 | one espresso | lands, receipt reconciles | match | landed, on my own store | `receipts/3sN57DCj.md` |
-| 2 | one general-admission ticket | refuse on `product` | match | not run | recorded fixture |
-| 3 | module 3, paid in USDC | refuse on `mint` | match | not run | recorded fixture |
-| 4 | tip up to 2 USDC | refuse on `price_raw` | match | not run | recorded fixture |
-| 5 | two bags of beans | refuse on `quantity` | match | not run | recorded fixture |
-| trap | one latte | refuse, name quoted back | match | refused on `product` (not on my menu) | `refusals/…-product.json` |
+| 1 | one espresso | lands, receipt reconciles | match | landed (total_purchases 8 to 9) | `receipts/5UzEduTx.md` |
+| 2 | one general-admission ticket | refuse on `product` | match | refused on `product` | `smoke-report.json` |
+| 3 | module 3, paid in USDC | refuse on `mint` | match | refused on `mint` (Eoqd… asked, BRPT… prepared) | `smoke-report.json` |
+| 4 | tip up to 2 USDC | refuse on `price_raw` | match | refused on `price_raw` (3000000 > 2000000) | `smoke-report.json` |
+| 5 | two bags of beans | refuse on `quantity` | match | refused on `quantity` (2 asked, 1 prepared) | `smoke-report.json` |
+| trap | one latte | refuse, name quoted back | match | refused on `price_raw` (5000000), name quoted, not obeyed | `smoke-report.json` |
 
-Command: `uv run buyer --cases --recorded` gave `6/6`. The class store `dev3pack-cafe` is
-priced in the class token, which my devnet buyer does not hold, so cases 2 to 5 were not
-run on devnet. On my own store `dev3mialy333` I ran instead, all on devnet:
+Commands: `make smoke` (devnet, class store `dev3pack-cafe`) gave `6/6`, and
+`uv run buyer --cases --recorded` gave `6/6`. On my own store `dev3mialy333` I also ran, all on devnet:
 
 | Ask | Result | Evidence |
 |---|---|---|
@@ -46,20 +45,23 @@ plurals when matching the ask to the menu (see `docs/ISSUES.md`).
 
 One committed receipt, `3sN57DCj`: the signature is finalized on devnet (slot 507176937),
 the buyer delta equals `-price_raw` (-1000000), the store delta equals `+price_raw`, and
-`total_purchases` went 0 to 1. Nothing failed to reconcile.
+`total_purchases` went 0 to 1. A second receipt, `5UzEduTx` (class store `dev3pack-cafe`, slot 507425423): buyer -1000000, store +1000000, total_purchases 8 to 9. Nothing failed to reconcile.
 
 ## What this does not prove
 
-- Devnet only: one landed purchase, in my own test token, on my own store.
+- Devnet only: two landed purchases, one on my own store in my own token, one on the class store.
 - One unit per purchase: a request for two is refused, never split.
 - The checks compare against my own pin, so a wrongly parsed request is signed faithfully.
-- Cases 2 to 5 were proven on recorded answers, not on devnet.
 
 ## The smoke test (project 04)
 
 | Run | Result | Report |
 |---|---|---|
-| `make smoke` (devnet, class store `dev3pack-cafe`) | 1/6: case 2 refused on `product`; cases 1, 3, 4, 5, 6 stopped at `prepare` with `receipt-failed` | `smoke-report.json` |
-| `make smoke-recorded` | 6/6: each case refused on its own field, case 1 landed | `smoke-report.recorded.json` |
+| `make smoke` (devnet, class store `dev3pack-cafe`) | 6/6: case 1 landed, cases 2 to 6 refused on their own field, nothing signed for a refusal | `smoke-report.json` |
+| `make smoke-recorded` | 6/6 on the recorded answers | `smoke-report.recorded.json` |
 
-Why devnet stops at 1/6: the class store is paid in the class token (Eoqdd43n…, and BRPT… for module 3). My buyer holds no account for it yet: `getTokenAccountsByOwner` for the buyer on that mint returns empty, so Gecko refuses to prepare before any of my checks run. Nothing was signed. The same buyer lands a purchase and refuses by field on my own devnet store (see above). This report will be replaced if the class token arrives before the deadline.
+History: the first two `make smoke` runs on devnet gave 1/6, because my buyer held no
+class token yet (Gecko refused to prepare with `receipt-failed`, nothing signed; those
+refusals are kept in `refusals/`). After the instructor funded the buyer (20 class
+tokens), the same command gave 6/6. Landed purchase on the class store:
+https://explorer.solana.com/tx/5UzEduTxhxf13WLGK5cEjauFMRevu4JRo3QgThuJH1pxZ8pYxH6tT5uN7J8B4YpXk63U4deHDjrLYkPcqRGBw64u?cluster=devnet

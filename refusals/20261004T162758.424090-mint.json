@@ -1,0 +1,13 @@
+{
+  "ask": "module 3, paid in USDC",
+  "step": "check",
+  "field": "mint",
+  "asked": "Eoqdd43nFQ9HzGq8HjBRVLCV6aTqCFRiwHy1ZVQheYSi",
+  "found": "BRPT4Sr7CWcJhfdwMJektzvLFKjgzVBK2AfrW4nPCEM6",
+  "where": "prepared",
+  "note": "a token is its address: the same label at another address is another token",
+  "signed": false,
+  "intent": "intents/20261004T162754.735755-module-3-paid-in-usdc.json",
+  "source": "devnet",
+  "at": "2026-10-04T16:27:58.424510+00:00"
+}

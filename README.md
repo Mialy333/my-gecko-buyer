@@ -37,6 +37,7 @@ The four defence cards also refuse on devnet (budget halved, a tampered byte, st
 | `uv run buyer --cards --recorded` | 4/4 |
 | `uv run pytest` | 98 passed, 2 skipped |
 | devnet: own store, 1 landed purchase, 4 refusals, 4 cards | done |
+| `make smoke` (devnet, class store `dev3pack-cafe`) | 6/6 |
 | project 01 self-check (`check.py`) | 8/8 |
 
 Why the buyer signs only on a full match: [`docs/adr/0001-refusals-before-signing.md`](docs/adr/0001-refusals-before-signing.md). What went wrong on the way: [`docs/ISSUES.md`](docs/ISSUES.md).
