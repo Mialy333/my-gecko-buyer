@@ -1,0 +1,13 @@
+{
+  "ask": "two bags of beans",
+  "step": "prepare",
+  "field": "gecko:receipt-failed",
+  "asked": null,
+  "found": null,
+  "where": "gecko",
+  "note": "the simulation did not pass, so no transaction is returned: a transaction that reverts against observed state would only cost you a fee on chain. Likely cause: sender_token_account 2BUgvmEuLKJgzPFfZFMxZCdUZtdiwXPfSBY5bLvcCwwa does not exist on devnet \u2014 the buyer holds no token account for the store'",
+  "signed": false,
+  "intent": "intents/20261004T161820.677413-two-bags-of-beans.json",
+  "source": "devnet",
+  "at": "2026-10-04T16:18:21.500314+00:00"
+}

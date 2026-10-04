@@ -54,3 +54,12 @@ the buyer delta equals `-price_raw` (-1000000), the store delta equals `+price_r
 - One unit per purchase: a request for two is refused, never split.
 - The checks compare against my own pin, so a wrongly parsed request is signed faithfully.
 - Cases 2 to 5 were proven on recorded answers, not on devnet.
+
+## The smoke test (project 04)
+
+| Run | Result | Report |
+|---|---|---|
+| `make smoke` (devnet, class store `dev3pack-cafe`) | 1/6: case 2 refused on `product`; cases 1, 3, 4, 5, 6 stopped at `prepare` with `receipt-failed` | `smoke-report.json` |
+| `make smoke-recorded` | 6/6: each case refused on its own field, case 1 landed | `smoke-report.recorded.json` |
+
+Why devnet stops at 1/6: the class store is paid in the class token (Eoqdd43n…, and BRPT… for module 3). My buyer holds no account for it yet: `getTokenAccountsByOwner` for the buyer on that mint returns empty, so Gecko refuses to prepare before any of my checks run. Nothing was signed. The same buyer lands a purchase and refuses by field on my own devnet store (see above). This report will be replaced if the class token arrives before the deadline.
