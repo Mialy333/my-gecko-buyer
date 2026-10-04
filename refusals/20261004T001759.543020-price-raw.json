@@ -1,0 +1,13 @@
+{
+  "ask": "one cookie",
+  "step": "check",
+  "field": "price_raw",
+  "asked": "at most 2000000",
+  "found": 2500000,
+  "where": "prepared",
+  "note": "for the product named 'Cookie'",
+  "signed": false,
+  "intent": "intents/20261004T001758.723125-one-cookie.json",
+  "source": "devnet",
+  "at": "2026-10-04T00:17:59.543349+00:00"
+}

@@ -1,0 +1,13 @@
+{
+  "ask": "one beans",
+  "step": "check",
+  "field": "price_raw",
+  "asked": "at most 2000000",
+  "found": 4000000,
+  "where": "prepared",
+  "note": "for the product named 'Beans'",
+  "signed": false,
+  "intent": "intents/20261004T001801.133317-one-beans.json",
+  "source": "devnet",
+  "at": "2026-10-04T00:18:02.100258+00:00"
+}

@@ -1,0 +1,13 @@
+{
+  "ask": "two espressos",
+  "step": "check",
+  "field": "quantity",
+  "asked": 2,
+  "found": 1,
+  "where": "prepared",
+  "note": "",
+  "signed": false,
+  "intent": "intents/20261004T001803.740037-two-espressos.json",
+  "source": "devnet",
+  "at": "2026-10-04T00:18:04.484203+00:00"
+}
