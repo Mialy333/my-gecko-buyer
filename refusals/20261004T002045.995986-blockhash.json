@@ -1,0 +1,13 @@
+{
+  "ask": "one espresso",
+  "step": "sign",
+  "field": "blockhash",
+  "asked": "height <= 494424074",
+  "found": 494424077,
+  "where": "signer",
+  "note": "stale bytes: prepare again, never re-sign",
+  "signed": false,
+  "intent": "intents/20261004T002009.272946-one-espresso.json",
+  "source": "devnet",
+  "at": "2026-10-04T00:20:45.996463+00:00"
+}

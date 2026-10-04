@@ -60,7 +60,7 @@ def findings_in(name: str, text: str) -> list[str]:
 
 
 def _git(*args: str) -> str:
-    return subprocess.run(["git", *args], capture_output=True, text=True, check=True).stdout
+    return subprocess.run(["git", *args], capture_output=True, text=True, errors="ignore", check=True).stdout
 
 
 def files(staged: bool) -> list[tuple[str, str]]:

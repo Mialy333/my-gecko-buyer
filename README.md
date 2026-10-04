@@ -1,4 +1,53 @@
-# Dev3Pack Gecko capstone: a buyer that pays, or says why not
+# my-gecko-buyer: an agent that pays on Solana, or names the field that stopped it
+
+**A buyer agent that reads a store's menu through Gecko, pins what was asked before any transaction exists, checks seven fields of the prepared purchase against that pin, and signs only when every one agrees. First landed purchase on devnet: [3sN57DCj… on the Solana explorer](https://explorer.solana.com/tx/3sN57DCj1mj9oFnVDD1eogy13zvja5McCjmxgGuraZFZb32wjBXxn2TsXV1CysTPT5YjQuBuVGYb51SnDwU95gYB?cluster=devnet).**
+
+![The landed purchase on the Solana explorer: status Success, finalized](docs/img/landed-purchase-explorer.png)
+
+## The receipt
+
+`uv run buyer "one espresso" --devnet`, on my own store [`dev3mialy333`](https://explorer.solana.com/address/65Zhzi9nXbfuHC6y79VdKtMSzni5mPQJrg1G7BarAaCX?cluster=devnet):
+
+![Terminal: every step ok, from the pinned intent to the receipt](docs/img/landed-purchase-terminal.png)
+
+Read from the ledger after the purchase, not from what the submit call said: buyer **-1000000**, store **+1000000** (1 token, 6 decimals), `total_purchases` **0 to 1**. Files: [`receipts/`](receipts/), the pin it was checked against in [`intents/`](intents/).
+
+## One refusal, then four
+
+A purchase that lands proves the plumbing. A purchase refused by field proves the buyer. Each refusal names the field and both values, and nothing is signed:
+
+![Four refusals on devnet: price_raw twice, quantity, product](docs/img/refusals-by-field.png)
+
+| Ask | Refused on | Asked | Found |
+|---|---|---|---|
+| one cookie | `price_raw` | at most 2000000 | 2500000 |
+| one beans | `price_raw` | at most 2000000 | 4000000 |
+| two espressos | `quantity` | 2 | 1 |
+| one latte | `product` | latte | not on the menu |
+
+The four defence cards also refuse on devnet (budget halved, a tampered byte, stale bytes), see [`docs/EVAL_REPORT.md`](docs/EVAL_REPORT.md):
+
+![The defence cards on devnet: price_raw, signed bytes, blockhash](docs/img/defence-cards-devnet.png)
+
+## Results
+
+| Run | Result |
+|---|---|
+| `uv run buyer --cases --recorded` | 6/6 |
+| `uv run buyer --cards --recorded` | 4/4 |
+| `uv run pytest` | 98 passed, 2 skipped |
+| devnet: own store, 1 landed purchase, 4 refusals, 4 cards | done |
+| project 01 self-check (`check.py`) | 8/8 |
+
+Why the buyer signs only on a full match: [`docs/adr/0001-refusals-before-signing.md`](docs/adr/0001-refusals-before-signing.md). What went wrong on the way: [`docs/ISSUES.md`](docs/ISSUES.md).
+
+**Keys.** None in this repository. The devnet keys live in `~/.config/dev3pack/`, outside it, and a pre-commit hook scans every commit for key material.
+
+---
+
+*Everything below is the course's original guide to this project.*
+
+## The course guide: Dev3Pack Gecko capstone
 
 ![Python](https://img.shields.io/badge/python-3.11+-blue)
 ![uv](https://img.shields.io/badge/uv-managed-6e56cf)
