@@ -128,9 +128,23 @@ make smoke
 
 ---
 
+## Repository map
+
+| Path | What it holds |
+|---|---|
+| `buyer/agent.py` | The buyer: parse, pin, prepare, check, sign, verify, submit, receipt |
+| `server/check_server.py` | MCP server with one tool, `check_purchase` |
+| `server/guard.py` | URL guard: public https addresses only |
+| `store/store.json` | My devnet store and its products |
+| `receipts/`, `refusals/` | Evidence from devnet: one file per purchase or refusal |
+| `scripts/scan_secrets.py` | Pre-commit key scan |
+| `docs/` | Evaluation report, decision record, defence cards, incidents |
+
+---
+
 ## Built on
 
-- [Dev3Pack Gecko Capstone Project](https://github.com/Gecko-Academy/Dev3Pack-Gecko-Capstone-Project) (starter, tests, cases).
+- [Dev3Pack Gecko Capstone Project](https://github.com/Gecko-Academy/Dev3Pack-Gecko-Capstone-Project) (starter, tests, cases). Its README holds the full course guide: setup, the five use cases, the week plan and the safety rules.
 - Gecko MCP servers: `gecko` (discovery) and `orquestra` (Solana: `list_stores`, `prepare_purchase`).
 
 ## Stack
