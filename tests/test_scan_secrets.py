@@ -36,3 +36,17 @@ def test_addresses_and_signatures_are_not_keys() -> None:
 
 def test_a_secret_assignment_is_caught() -> None:
     assert scan.findings_in(".env", "PRIVATE_KEY=" + "x" * 40)
+
+
+def test_a_prefixed_secret_name_is_caught() -> None:
+    # `\b` sees no word boundary between "_" and "P": SOLANA_PRIVATE_KEY slipped through.
+    value = "x" * 40
+    assert scan.findings_in(".env", "SOLANA_PRIVATE_KEY=" + value)
+    assert scan.findings_in(".env", "OPENAI_API_KEY=sk-" + value)
+    assert scan.findings_in(".env", "AWS_SECRET_ACCESS_KEY=" + value)
+    assert scan.findings_in("config.py", 'gecko_api_key = "' + value + '"')
+
+
+def test_a_short_placeholder_or_a_longer_name_is_not_a_secret() -> None:
+    assert scan.findings_in(".env.example", "OPENAI_API_KEY=your-key-here") == []
+    assert scan.findings_in("notes.md", "API_KEY_ID=" + "x" * 40) == []

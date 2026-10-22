@@ -9,8 +9,9 @@ It looks for what a Solana key actually looks like on disk, not for the word "ke
 * a file whose name says it is a keypair (`*keypair*.json`, `id.json`, `devnet-*.json`,
   `mainnet-*.json`, `friday-*.json`, `*.pem`, `*.key`);
 * a PEM private key block;
-* an assignment of a secret-looking name (`PRIVATE_KEY=`, `SECRET_KEY=`, `SEED_PHRASE=`,
-  `MNEMONIC=`) to a long value.
+* an assignment of a secret-looking name (`PRIVATE_KEY=`, `SECRET_KEY=`, `API_KEY=`,
+  `SECRET_ACCESS_KEY=`, `SEED_PHRASE=`, `MNEMONIC=`, with any prefix such as `SOLANA_`)
+  to a long value.
 
 It prints the file, the line and WHICH rule matched. It never prints the match itself.
 Addresses and transaction signatures are public and are not flagged.
@@ -27,8 +28,12 @@ from pathlib import Path
 
 KEYPAIR_ARRAY = re.compile(r"\[\s*(?:\d{1,3}\s*,\s*){63}\d{1,3}\s*\]")
 PEM = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")
+# `\b` alone missed SOLANA_PRIVATE_KEY: "_" is a word character, so there is no boundary
+# before "PRIVATE". The name may carry any prefix ending in "_" (SOLANA_, AWS_, OPENAI_).
 ASSIGNED = re.compile(
-    r"(?i)\b(private_key|secret_key|seed_phrase|mnemonic)\b\s*[:=]\s*[\"']?[^\s\"']{16,}"
+    r"(?i)(?<![a-z0-9_])(?:[a-z0-9]+_)*"
+    r"(private_key|secret_key|secret_access_key|api_key|seed_phrase|mnemonic)\b"
+    r"\s*[:=]\s*[\"']?[^\s\"']{16,}"
 )
 NAMES = [
     "*keypair*.json",
